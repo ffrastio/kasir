@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 
-class Category extends Model
+class Profit extends Model
 {
     use HasFactory;
 
@@ -16,28 +17,28 @@ class Category extends Model
      * @var array
      */
     protected $fillable = [
-        'image', 'name', 'description'
+        'transaction_id', 'total'
     ];
 
     /**
-     * products
+     * transaction
      *
      * @return void
      */
-    public function products()
+    public function transaction()
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsTo(Transaction::class);
     }
 
     /**
-     * image
+     * createdAt
      *
      * @return Attribute
      */
-    protected function image(): Attribute
+    protected function createdAt(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => asset('/storage/categories/' . $value),
+            get: fn ($value) => Carbon::parse($value)->format('d-M-Y H:i:s'),
         );
     }
 }

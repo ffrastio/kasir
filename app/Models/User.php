@@ -43,14 +43,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    /**
-     * getPermissionsArray
-     *
-     * @return void
-     */
-    public function getPermissionsArray()
+    public function getPermissionArray()
     {
-        return $this->getAllPermissions()->mapWitKeys(function ($pr) {
+        return $this->getAllPermissions()->mapWithKeys(function ($pr) {
             return [$pr['name'] => true];
         });
     }
