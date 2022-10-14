@@ -17,7 +17,7 @@ class Product extends Model
      * @var mixed
      */
     protected $fillable = [
-        'name', 'category_id', 'description', 'sell_price', 'buy_price', 'barcode', 'stock', 'image', 'product_qty'
+        'title', 'category_id', 'description', 'sell_price', 'buy_price', 'barcode', 'stock', 'image', 'product_qty'
     ];
 
     /**
