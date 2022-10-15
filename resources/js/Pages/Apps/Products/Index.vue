@@ -1,6 +1,6 @@
 <template>
     <Head>
-        <title>Users - Aplikasi Kasir</title>
+        <title>Products - Aplikasi Kasir</title>
     </Head>
     <main class="c-main">
         <div class="container-fluid">
@@ -12,17 +12,18 @@
                         >
                             <div class="card-header">
                                 <span class="font-weight-bold"
-                                    ><i class="fa fa-users"></i> USERS</span
+                                    ><i class="fa fa-shopping-bag"></i>
+                                    PRODUCTS</span
                                 >
                             </div>
                             <div class="card-body">
                                 <form @submit.prevent="handleSearch">
                                     <div class="input-group mb-3">
                                         <Link
-                                            href="/apps/users/create"
+                                            href="/apps/products/create"
                                             v-if="
                                                 hasAnyPermission([
-                                                    'users.create',
+                                                    'products.create',
                                                 ])
                                             "
                                             class="btn btn-primary input-group-text"
@@ -32,12 +33,11 @@
                                             ></i>
                                             NEW</Link
                                         >
-
                                         <input
                                             type="text"
                                             class="form-control"
                                             v-model="search"
-                                            placeholder="search by user name..."
+                                            placeholder="search by product title..."
                                         />
 
                                         <button
@@ -54,9 +54,12 @@
                                 >
                                     <thead>
                                         <tr>
-                                            <th scope="col">Full Name</th>
-                                            <th scope="col">Email Address</th>
-                                            <th scope="col">Roles</th>
+                                            <th scope="col">Barcode</th>
+                                            <th scope="col">Title</th>
+                                            <th scope="col">Buy Price</th>
+                                            <th scope="col">Sell Price</th>
+                                            <th scope="col">Stock</th>
+                                            <th scope="col">Product Qty</th>
                                             <th scope="col" style="width: 20%">
                                                 Actions
                                             </th>
@@ -64,28 +67,45 @@
                                     </thead>
                                     <tbody>
                                         <tr
-                                            v-for="(user, index) in users.data"
+                                            v-for="(
+                                                product, index
+                                            ) in products.data"
                                             :key="index"
                                         >
-                                            <td>{{ user.name }}</td>
-                                            <td>{{ user.email }}</td>
-                                            <td>
-                                                <span
-                                                    v-for="(
-                                                        role, index
-                                                    ) in user.roles"
-                                                    :key="index"
-                                                    class="badge badge-primary shadow border-0 ms-2 mb-2"
-                                                >
-                                                    {{ role.name }}
-                                                </span>
+                                            <td class="text-center">
+                                                <Barcode
+                                                    :value="product.barcode"
+                                                    :format="'CODE39'"
+                                                    :lineColor="'#000'"
+                                                    :width="1"
+                                                    :height="20"
+                                                />
                                             </td>
+                                            <td>{{ product.title }}</td>
+                                            <td>
+                                                Rp.
+                                                {{
+                                                    formatPrice(
+                                                        product.buy_price
+                                                    )
+                                                }}
+                                            </td>
+                                            <td>
+                                                Rp.
+                                                {{
+                                                    formatPrice(
+                                                        product.sell_price
+                                                    )
+                                                }}
+                                            </td>
+                                            <td>{{ product.stock }}</td>
+                                            <td>{{ product.product_qty }}</td>
                                             <td class="text-center">
                                                 <Link
-                                                    :href="`/apps/users/${user.id}/edit`"
+                                                    :href="`/apps/products/${product.id}/edit`"
                                                     v-if="
                                                         hasAnyPermission([
-                                                            'users.edit',
+                                                            'products.edit',
                                                         ])
                                                     "
                                                     class="btn btn-success btn-sm me-2"
@@ -96,11 +116,11 @@
                                                 >
                                                 <button
                                                     @click.prevent="
-                                                        destroy(user.id)
+                                                        destroy(product.id)
                                                     "
                                                     v-if="
                                                         hasAnyPermission([
-                                                            'users.delete',
+                                                            'products.delete',
                                                         ])
                                                     "
                                                     class="btn btn-danger btn-sm"
@@ -112,7 +132,10 @@
                                         </tr>
                                     </tbody>
                                 </table>
-                                <Pagination :links="users.links" align="end" />
+                                <Pagination
+                                    :links="products.links"
+                                    align="end"
+                                />
                             </div>
                         </div>
                     </div>
@@ -138,25 +161,30 @@ import { ref } from "vue";
 //import inertia adapter
 import { Inertia } from "@inertiajs/inertia";
 
-// import sweetalert
+//import sweet alert2
 import Swal from "sweetalert2";
+
+//import component barcode
+import Barcode from "../../../Components/Barcode.vue";
 
 export default {
     //layout
     layout: LayoutApp,
 
-    //register component
+    //register components
     components: {
         Head,
         Link,
         Pagination,
+        Barcode,
     },
 
     //props
     props: {
-        users: Object,
+        products: Object,
     },
 
+    //composition API
     setup() {
         //define state search
         const search = ref(
@@ -165,14 +193,15 @@ export default {
 
         //define method search
         const handleSearch = () => {
-            Inertia.get("/apps/users", {
+            Inertia.get("/apps/products", {
                 //send params "q" with value from state "search"
                 q: search.value,
             });
         };
 
-        // define method delete user
+        //method "destroy"
         const destroy = (id) => {
+            //show confirm
             Swal.fire({
                 title: "Are you sure?",
                 text: "You won't be able to revert this!",
@@ -183,11 +212,13 @@ export default {
                 confirmButtonText: "Yes, delete it!",
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Inertia.delete(`/apps/users/${id}`);
+                    //send to server
+                    Inertia.delete(`/apps/products/${id}`);
 
+                    //show alert
                     Swal.fire({
                         title: "Deleted!",
-                        text: "User deleted successfully.",
+                        text: "Product deleted successfully.",
                         icon: "success",
                         timer: 2000,
                         showConfirmButton: false,
@@ -196,7 +227,6 @@ export default {
             });
         };
 
-        //return
         return {
             search,
             handleSearch,
